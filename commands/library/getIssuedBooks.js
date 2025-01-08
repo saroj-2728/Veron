@@ -4,7 +4,7 @@ const { getBooksData } = require('../../utils/getBooksData.js')
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('getbooks')
-        .setDescription('Get the details of book issued from library!')
+        .setDescription('Get the details of the books issued from the library!')
         .addStringOption(option =>
             option.setName('roll')
                 .setDescription('Your college roll number')
@@ -18,7 +18,7 @@ module.exports = {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         try {
-            const response = await getBooksData()
+            const response = await getBooksData(roll)
 
             if (!response.success) {
                 return interaction.editReply(response.message)
@@ -29,7 +29,7 @@ module.exports = {
             if (books.length === 0) {
                 return interaction.editReply('No books found.');
             }
-
+            
             const formattedBooks = books
                 .map(
                     (book, index) =>

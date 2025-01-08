@@ -1,14 +1,8 @@
 const cheerio = require('cheerio');
-const client = require('../index.js');
-
-let users = [];
+const { Roll } = require('../models/rollNumber.js')
+const { request } = require('undici');
 
 module.exports = {
-    users,
-
-    addUser(userId, roll) {
-        users.push({ userId, roll });
-    },
 
     async getBooksData(roll) {
 
@@ -16,12 +10,19 @@ module.exports = {
             const loginResponse = await fetch('http://pulchowk.elibrary.edu.np/Account/Login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'Accept': 'application/json, text/javascript, */*; q=0.01',
+                    'Accept-Language': 'en-GB,en;q=0.9',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Origin': 'http://pulchowk.elibrary.edu.np',
+                    'Referer': 'http://pulchowk.elibrary.edu.np/',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    'Connection': 'keep-alive'
                 },
                 body: new URLSearchParams({
                     Username: roll,
                     Password: roll,
-                }),
+                })
             });
 
             if (!loginResponse.ok) {
@@ -36,7 +37,7 @@ module.exports = {
             if (!cookie) {
                 return {
                     success: false,
-                    message: 'Login successful, but session cookie not found. Please try again.'
+                    message: 'Something went wrong. Please try again.'
                 }
             }
 
@@ -56,7 +57,6 @@ module.exports = {
             }
 
             const html = await booksResponse.text();
-            console.log(html);
 
             const $ = cheerio.load(html);
             const books = [];
@@ -85,54 +85,64 @@ module.exports = {
         }
     },
 
-    async checkBookDueDates() {
-        for (let user of users) {
-            const { userId, roll } = user;
+    async checkBookDueDates(client) {
+        try {
+            const users = await Roll.find();
 
-            try {
-                const books = (await module.exports.getBooksData(roll)).message;
-                console.log(books)
-                if (!books || books.length === 0) continue;
+            for (let user of users) {
+                const { userId, roll } = user;
 
-                for (const book of books) {
-                    if (book.overdue && typeof book.overdue === 'string') {
-                        const dueDate = Math.abs(+book.overdue.split(' ')[0]);
+                try {
+                    const books = (await module.exports.getBooksData(roll)).message;
 
-                        if (!isNaN(dueDate) && dueDate <= 85) {
-                            await module.exports.sendDueDateReminder(userId, book);
+                    if (!books || books.length === 0) continue;
+
+                    const overdueBooks = books.filter(book => {
+                        if (book.overdue && typeof book.overdue === 'string') {
+                            const dueDate = Math.abs(+book.overdue.split(' ')[0]);
+                            return !isNaN(dueDate) && dueDate <= 80;
                         }
+                        return false;
+                    });
+
+                    if (overdueBooks.length > 0) {
+                        await module.exports.sendDueDateReminder(client, userId, overdueBooks);
                     }
                 }
+                catch (error) {
+                    console.error(`Error while checking book due dates:`, error);
+                }
             }
-            catch (error) {
-                console.error(`Error processing user ${userId}:`, error.message);
-            }
+        }
+        catch (error) {
+            console.error(`Error processing user ${userId}:`, error.message);
         }
     },
 
-    async sendDueDateReminder(userId, book) {
+    async sendDueDateReminder(client, userId, books) {
         try {
+            const bookDetails = books.map((book, index) => `
+            **${index + 1}. Title:** ${book.title}
+            **Accession No.:** ${book.accessionNo}
+            **Issue Date:** ${book.issueDate}
+            **Return Date:** ${book.returnDate}
+            **Days Remaining:** ${Math.abs(+book.overdue.split(' ')[0])} days
+            `).join(' ');
 
             const message = `
     Hello! 📚
-    You have a book due soon:
-    
-    **Title:** ${book.title}
-    **Accession No.:** ${book.accessionNo}
-    **Issue Date:** ${book.issueDate}
-    **Return Date:** ${book.returnDate}
-    **Days Remaining:** ${Math.abs(+book.overdue.split(' ')[0])} days
-    
-    Please make sure to return or renew it on time to avoid penalties.
+    You have books due soon: 
+    ${bookDetails} 
+    Please make sure to return or renew them on time to avoid penalties.
             `;
 
-            // Send the DM to the user
             await client.users.send(userId, message);
-            console.log(`Reminder sent to user ${userId} about the book "${book.title}".`);
-        } 
+            console.log(`Reminder sent to user ${userId} about ${books.length} books.`);
+        }
         catch (error) {
             console.error(`Failed to send DM to user ${userId}:`, error);
         }
     }
+
 
 }

@@ -5,7 +5,7 @@ const { Client, Collection, GatewayIntentBits } = require('discord.js');
 require('dotenv').config()
 const token = process.env.DISCORD_BOT_TOKEN
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages,] });
 
 client.commands = new Collection();
 
@@ -42,5 +42,3 @@ for (const file of eventFiles) {
 }
 
 client.login(token);
-
-module.exports = client;

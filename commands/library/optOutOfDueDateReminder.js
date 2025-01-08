@@ -3,8 +3,8 @@ const { Roll } = require('../../models/rollNumber.js')
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('get-notified-about-due-date')
-        .setDescription('Get notified about the books due date issued from the libraray')
+        .setName('opt-out-of-due-date-reminders')
+        .setDescription('Opt out of due date reminders about the books issued from the library.')
         .addStringOption(option =>
             option.setName('roll')
                 .setDescription('Your college roll number')
@@ -20,15 +20,13 @@ module.exports = {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         try {
-            const existingUser = await Roll.findOne({ roll });
+            const existingUser = await Roll.findOneAndDelete({ userId, roll });
 
-            if (existingUser) {
-                await interaction.editReply(`You've already opted in for book due date reminders!`);
+            if (!existingUser) {
+                await interaction.editReply(`You haven't been registered for due date reminders!`);
             }
             else {
-                const newUser = new Roll({ userId, roll });
-                await newUser.save()
-                await interaction.editReply(`You have successfully registered for book due date reminders. You will receive a message if any of your books issued from the library have a due date of less than 5 days.`);
+                await interaction.editReply(`You have successfully opted out of due date reminders about the books issued from the library.`);
             }
         }
         catch (error) {
