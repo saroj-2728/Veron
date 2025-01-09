@@ -14,18 +14,18 @@ async function getBooksData(roll) {
                 'Origin': 'http://pulchowk.elibrary.edu.np',
                 'Referer': 'http://pulchowk.elibrary.edu.np/',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                'Connection': 'keep-alive'
+                'Connection': 'keep-alive',
             },
             body: new URLSearchParams({
                 Username: roll,
                 Password: roll,
-            })
+            }),
         });
 
         if (!loginResponse.ok) {
             return {
                 success: false,
-                message: 'Failed to log in. Please check your roll number.'
+                message: 'Failed to log in. Please check your roll number.',
             }
         }
 
@@ -43,7 +43,7 @@ async function getBooksData(roll) {
         if (!cookie) {
             return {
                 success: false,
-                message: 'Something went wrong. Please try again.'
+                message: 'Something went wrong. Please try again.',
             }
         }
 
@@ -58,7 +58,7 @@ async function getBooksData(roll) {
         if (!booksResponse.ok) {
             return {
                 success: false,
-                message: 'Failed to fetch books. Please try again later.'
+                message: 'Failed to fetch books. Please try again later.',
             }
         }
 
@@ -79,14 +79,14 @@ async function getBooksData(roll) {
 
         return {
             success: true,
-            message: books
+            message: books,
         }
     }
     catch (error) {
         console.error(error);
         return {
             success: false,
-            message: 'An error occurred while fetching the book list. Please try again later.'
+            message: 'An error occurred while fetching the book list. Please try again later.',
         }
     }
 }

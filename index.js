@@ -5,7 +5,7 @@ const { Client, Collection, GatewayIntentBits } = require('discord.js');
 require('dotenv').config()
 const token = process.env.DISCORD_BOT_TOKEN
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages,] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages] });
 
 client.commands = new Collection();
 
@@ -18,7 +18,7 @@ for (const folder of commandFolders) {
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath);
-		
+
 		if ('data' in command && 'execute' in command) {
 			client.commands.set(command.data.name, command);
 		}
@@ -36,7 +36,8 @@ for (const file of eventFiles) {
 	const event = require(filePath);
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args));
-	} else {
+	}
+	else {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }

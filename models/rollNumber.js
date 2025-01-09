@@ -5,13 +5,13 @@ const rollSchema = new Schema({
     userId: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
     },
     roll: {
         type: String,
         required: true,
-        unique: true
-    }
+        unique: true,
+    },
 });
 
 rollSchema.index({ userId: 1, roll: 1 }, { unique: true });

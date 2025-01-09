@@ -10,8 +10,7 @@ module.exports = {
                 .setDescription('Your college roll number')
                 .setRequired(true)
                 .setMaxLength(9)
-                .setMinLength(9)
-        ),
+                .setMinLength(9)),
 
     async execute(interaction) {
         const roll = interaction.options.getString('roll')
@@ -35,5 +34,5 @@ module.exports = {
             console.error('Error while saving roll to database: ', error);
             await interaction.editReply(`Something went wrong! Please try again`);
         }
-    }
+    },
 }

@@ -29,7 +29,7 @@ module.exports = {
             if (books.length === 0) {
                 return interaction.editReply('No books found.');
             }
-            
+
             const formattedBooks = books
                 .map(
                     (book, index) =>
@@ -37,8 +37,7 @@ module.exports = {
                         `   **Accession No:** ${book.accessionNo}\n` +
                         `   **Issue Date:** ${book.issueDate}\n` +
                         `   **Return Date:** ${book.returnDate}\n` +
-                        `   **Overdue:** ${book.overdue}`
-                )
+                        `   **Overdue:** ${book.overdue}`)
                 .join('\n\n');
 
             interaction.editReply(`Here is the list of books issued to ${roll}:\n\n${formattedBooks}`);
@@ -47,6 +46,6 @@ module.exports = {
             console.error(error);
             interaction.editReply('An error occurred while fetching the book list. Please try again later.');
         }
-    }
+    },
 };
 
