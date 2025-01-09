@@ -1,3 +1,4 @@
+// For manual commands deployment to the server
 const { REST, Routes } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
