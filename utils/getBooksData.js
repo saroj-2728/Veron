@@ -129,7 +129,7 @@ module.exports = {
             `).join(' ');
 
             const message = `
-    Hello! 📚
+    Hello <@${userId}>! 📚
     You have books due soon: 
     ${bookDetails} 
     Please make sure to return or renew them on time to avoid penalties.
