@@ -11,12 +11,28 @@ module.exports = {
 
 		await connectToDatabase()
 
-		// 1 45 AM in US West (Oregon, USA) (server location hosted at railway) = 8 45 AM in Nepal
-		cron.schedule('45 1 * * *', () => {
+		// This schedules the job for 8:45 AM Nepal time
+		cron.schedule('45 8 * * *', () => {
 			console.log('Running daily book due date check...');
 			checkBookDueDates(client)
 				.then(() => console.log('Book due date check completed.'))
 				.catch(err => console.error('Error during book due date check:', err));
+		}, {
+			scheduled: true,
+			timezone: "Asia/Kathmandu",
+		});
+
+		// Keep the server alive by pinging it every 5 minutes
+		const appUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+		cron.schedule('*/10 * * * *', async () => {
+			try {
+				console.log('Pinging server to keep alive...');
+				const response = await fetch(appUrl);
+				console.log(`Ping successful: ${response.status}`);
+			}
+			catch (error) {
+				console.error('Ping failed:', error.message);
+			}
 		});
 	},
 };

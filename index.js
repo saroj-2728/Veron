@@ -1,9 +1,20 @@
 const fs = require('node:fs')
 const path = require('node:path')
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const express = require('express')
 
 require('dotenv').config()
 const token = process.env.DISCORD_BOT_TOKEN
+const PORT = process.env.PORT || 3000
+
+const app = express()
+app.get('/', (req, res) => {
+  res.send('Bot is alive!')
+})
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+})
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages] });
 
