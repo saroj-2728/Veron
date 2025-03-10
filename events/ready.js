@@ -27,8 +27,7 @@ module.exports = {
 		cron.schedule('*/10 * * * *', async () => {
 			try {
 				console.log('Pinging server to keep alive...');
-				const response = await fetch(appUrl);
-				console.log(`Ping successful: ${response.status}`);
+				await fetch(appUrl);
 			}
 			catch (error) {
 				console.error('Ping failed:', error.message);
