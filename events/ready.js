@@ -26,7 +26,6 @@ module.exports = {
 		const appUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
 		cron.schedule('*/10 * * * *', async () => {
 			try {
-				console.log('Pinging server to keep alive...');
 				await fetch(appUrl);
 			}
 			catch (error) {
