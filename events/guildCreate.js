@@ -6,6 +6,11 @@ require('dotenv').config()
 const token = process.env.DISCORD_BOT_TOKEN
 const clientId = process.env.DISCORD_APP_CLIENT_ID
 
+if (!token) {
+    console.error('Discord bot token is required. Please set the DISCORD_BOT_TOKEN environment variable.')
+    process.exit(1)
+}
+
 module.exports = {
     name: Events.GuildCreate,
     async execute(guild) {

@@ -5,11 +5,21 @@ const express = require('express')
 
 require('dotenv').config()
 const token = process.env.DISCORD_BOT_TOKEN
+
+if (!token) {
+	console.error('Discord bot token is required. Please set the DISCORD_BOT_TOKEN environment variable.')
+	process.exit(1)
+}
+
 const PORT = process.env.PORT || 3000
 
 const app = express()
 app.get('/', (req, res) => {
 	res.send('Bot is alive!')
+})
+
+app.listen(PORT, () => {
+	console.log(`Server is running on port ${PORT}`)
 })
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages] });
@@ -49,20 +59,4 @@ for (const file of eventFiles) {
 	}
 }
 
-// connect to Discord
-client.login(token)
-	.then(() => {
-		console.log('Discord bot logged in successfully')
-
-		// start Express server
-		app.listen(PORT, () => {
-			console.log(`Server is running on port ${PORT}`)
-		})
-	})
-	.catch(err => {
-		console.error('Failed to log in to Discord:', err)
-
-		app.listen(PORT, () => {
-			console.log(`Server is running on port ${PORT} (but Discord login failed)`)
-		})
-	});
+client.login(token);
