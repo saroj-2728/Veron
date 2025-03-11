@@ -9,11 +9,7 @@ const PORT = process.env.PORT || 3000
 
 const app = express()
 app.get('/', (req, res) => {
-  res.send('Bot is alive!')
-})
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
+	res.send('Bot is alive!')
 })
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages] });
@@ -53,4 +49,20 @@ for (const file of eventFiles) {
 	}
 }
 
-client.login(token);
+// connect to Discord
+client.login(token)
+	.then(() => {
+		console.log('Discord bot logged in successfully')
+
+		// start Express server
+		app.listen(PORT, () => {
+			console.log(`Server is running on port ${PORT}`)
+		})
+	})
+	.catch(err => {
+		console.error('Failed to log in to Discord:', err)
+
+		app.listen(PORT, () => {
+			console.log(`Server is running on port ${PORT} (but Discord login failed)`)
+		})
+	});
