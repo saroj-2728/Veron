@@ -9,10 +9,16 @@ module.exports = {
 	async execute(client) {
 		console.log(`Ready! Logged in as ${client.user.tag}`);
 
-		await connectToDatabase()
+		try {
+			await connectToDatabase();
+			console.log('Successfully connected to database');
+		}
+		catch (error) {
+			console.error('Failed to connect to database:', error);
+		}
 
 		// This schedules the job for 8:45 AM Nepal time
-		cron.schedule('45 8 * * *', () => {
+		const dueDateJob = cron.schedule('45 8 * * *', () => {
 			console.log('Running daily book due date check...');
 			checkBookDueDates(client)
 				.then(() => console.log('Book due date check completed.'))
@@ -22,15 +28,23 @@ module.exports = {
 			timezone: "Asia/Kathmandu",
 		});
 
-		// Keep the server alive by pinging it every 5 minutes
+		// Keep the server alive by pinging it every 10 minutes
 		const appUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
-		cron.schedule('*/10 * * * *', async () => {
+		const pingJob = cron.schedule('*/10 * * * *', async () => {
 			try {
+				// console.log(`Pinging service at ${new Date().toISOString()}`);
 				await fetch(appUrl);
+				// const text = await response.text();
+				// console.log(`Ping successful: ${text}`);
 			}
 			catch (error) {
 				console.error('Ping failed:', error.message);
 			}
 		});
+
+		client.jobs = {
+			dueDateJob,
+			pingJob,
+		};
 	},
 };
