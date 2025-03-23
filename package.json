@@ -18,7 +18,8 @@
     "express": "^4.21.2",
     "mongoose": "^8.9.3",
     "node-cron": "^3.0.3",
-    "tzdata": "^1.0.43"
+    "tzdata": "^1.0.43",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

@@ -7,44 +7,61 @@ module.exports = {
 	name: Events.ClientReady,
 	once: true,
 	async execute(client) {
-		console.log(`Ready! Logged in as ${client.user.tag}`);
+		logger.info(`Ready! Logged in as ${client.user.tag}`);
 
 		try {
 			await connectToDatabase();
-			console.log('Successfully connected to database');
+			logger.info('Successfully connected to database');
 		}
 		catch (error) {
-			console.error('Failed to connect to database:', error);
+			logger.error('Failed to connect to database:', { error: error.message });
 		}
 
 		// This schedules the job for 8:45 AM Nepal time
 		const dueDateJob = cron.schedule('45 8 * * *', () => {
-			console.log('Running daily book due date check...');
+			logger.info('Running daily book due date check...');
 			checkBookDueDates(client)
-				.then(() => console.log('Book due date check completed.'))
-				.catch(err => console.error('Error during book due date check:', err));
+				.then(() => {
+					logger.info('Book due date check completed.');
+
+					// Send a ping immediately after the job completes
+					// This prevents the service from shutting down after the daily task
+					sendPing(true);
+				})
+				.catch(err => logger.error('Error during book due date check:', { error: err.message }));
 		}, {
 			scheduled: true,
 			timezone: "Asia/Kathmandu",
 		});
 
 		// Keep the server alive by pinging it every 10 minutes
-		const appUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
 		const pingJob = cron.schedule('*/10 * * * *', async () => {
+			sendPing();
+		});
+
+		async function sendPing(force = false) {
 			try {
-				// console.log(`Pinging service at ${new Date().toISOString()}`);
+				const appUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+				// Only log pings if forced (like after important jobs) or if in debug mode
+				if (force || process.env.LOG_LEVEL === 'debug') {
+					logger.info('Sending ping to keep service alive');
+				}
 				await fetch(appUrl);
-				// const text = await response.text();
-				// console.log(`Ping successful: ${text}`);
+				if (force || process.env.LOG_LEVEL === 'debug') {
+					logger.info('Ping successful');
+				}
 			}
 			catch (error) {
-				console.error('Ping failed:', error.message);
+				// Always log ping failures
+				logger.error('Ping failed:', { error: error.message });
 			}
-		});
+		}
 
 		client.jobs = {
 			dueDateJob,
 			pingJob,
 		};
+
+		logger.info('All scheduled jobs initialized successfully');
 	},
 };
